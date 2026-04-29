@@ -6,9 +6,7 @@ Keyboard Maintainer: [alko](https://github.com/alko-kbd/cornedeon_2mod) [alko-kb
 
 Web Site: [cornedeon.ru](https://cornedeon.ru)
 
-**Hardware Supported**
-
-RP2040, Handwired, Trackpads, Trackpoints, Joystick.
+Hardware Supported: Handwired, RP2040, Trackpads, Trackpoints, Joystick.
 
 ![Cornedeon](img/1_over_s.jpg)
 
