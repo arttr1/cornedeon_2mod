@@ -11,31 +11,42 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 45
-    container:
-      image: ghcr.io/vial-kb/vial-qmk/vial_qmk_base:latest
 
     steps:
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y gcc-arm-none-eabi python3 python3-pip git
+
+      - name: Clone vial-qmk (shallow, no submodules)
+        run: |
+          git clone --depth 1 https://github.com/vial-kb/vial-qmk.git vial-qmk
+
+      - name: Init required submodules for RP2040
+        working-directory: vial-qmk
+        run: |
+          git submodule update --init --depth 1 lib/chibios
+          git submodule update --init --depth 1 lib/chibios-contrib
+          git submodule update --init --depth 1 lib/pico-sdk
+          git submodule update --init --depth 1 lib/printf
+
       - name: Checkout cornedeon_lite
         uses: actions/checkout@v4
         with:
-          path: keyboards/alko/cornedeon_lite
+          path: vial-qmk/keyboards/alko/cornedeon_lite
 
-      - name: Copy keyboard into vial-qmk
-        run: |
-          mkdir -p /vial-qmk/keyboards/alko
-          cp -r keyboards/alko/cornedeon_lite /vial-qmk/keyboards/alko/cornedeon_lite
+      - name: Install QMK CLI
+        run: pip3 install qmk
 
       - name: Build firmware
+        working-directory: vial-qmk
         run: |
-          cd /vial-qmk
+          qmk config user.qmk_home=$(pwd)
           qmk compile -kb alko/cornedeon_lite -km vial
-
-      - name: Copy firmware artifact
-        run: cp /vial-qmk/*.uf2 . 2>/dev/null || cp /vial-qmk/.build/*.uf2 . 2>/dev/null
 
       - name: Upload firmware artifact
         uses: actions/upload-artifact@v4
         with:
           name: cornedeon_lite_vial
-          path: '*.uf2'
+          path: 'vial-qmk/*.uf2'
           if-no-files-found: error
