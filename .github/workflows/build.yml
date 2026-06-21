@@ -10,14 +10,22 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
-      - name: Checkout vial-qmk
+      - name: Checkout vial-qmk (no submodules)
         uses: actions/checkout@v4
         with:
           repository: vial-kb/vial-qmk
           ref: master
-          submodules: recursive
+          submodules: false
+
+      - name: Init only required submodules for RP2040
+        run: |
+          git submodule update --init --depth 1 lib/chibios
+          git submodule update --init --depth 1 lib/chibios-contrib
+          git submodule update --init --depth 1 lib/pico-sdk
+          git submodule update --init --depth 1 lib/printf
 
       - name: Checkout cornedeon_lite into keyboards/alko/cornedeon_lite
         uses: actions/checkout@v4
@@ -27,7 +35,7 @@ jobs:
 
       - name: Install build dependencies
         run: |
-          sudo apt-get update
+          sudo apt-get update -qq
           sudo apt-get install -y gcc-arm-none-eabi python3 python3-pip
 
       - name: Install QMK CLI
